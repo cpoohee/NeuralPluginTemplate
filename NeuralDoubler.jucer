@@ -17,10 +17,14 @@
   </MAINGROUP>
   <JUCEOPTIONS JUCE_STRICT_REFCOUNTEDPOINTER="1" JUCE_VST3_CAN_REPLACE_VST2="0"/>
   <EXPORTFORMATS>
-    <XCODE_MAC targetFolder="Builds/MacOSX">
+    <XCODE_MAC targetFolder="Builds/MacOSX" externalLibraries="onnxruntime"
+               customXcodeResourceFolders="../../onnxruntime/onnxruntime-osx-universal2-1.14.1/lib">
       <CONFIGURATIONS>
-        <CONFIGURATION isDebug="1" name="Debug" targetName="NeuralDoubler"/>
-        <CONFIGURATION isDebug="0" name="Release" targetName="NeuralDoubler"/>
+        <CONFIGURATION isDebug="1" name="Debug" targetName="NeuralDoubler" headerPath="../../onnxruntime/onnxruntime-osx-universal2-1.14.1/include"
+                       libraryPath="../../onnxruntime/onnxruntime-osx-universal2-1.14.1/lib"
+                       customXcodeFlags="LD_RUNPATH_SEARCH_PATH=@loader_path/../Resources/lib"/>
+        <CONFIGURATION isDebug="0" name="Release" targetName="NeuralDoubler" headerPath="/Users/cpoohee/Documents/onnxruntime/onnxruntime-osx-universal2-1.14.1/include"
+                       libraryPath="/Users/cpoohee/Documents/onnxruntime/onnxruntime-osx-universal2-1.14.1/lib"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
         <MODULEPATH id="juce_audio_basics" path="../../../JUCE/modules"/>

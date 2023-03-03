@@ -9,7 +9,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-//#include <onnxruntime_cxx_api.h>
+#include "onnxruntime_cxx_api.h"
 
 //==============================================================================
 /**
@@ -59,7 +59,7 @@ public:
 
 private:
     //==============================================================================
-//    Ort::Env env;
+    Ort::Env env;
 ////    Ort::Session session_{env, L"/models/aw_wavenet.onnx", Ort::SessionOptions{nullptr}};
 //    Ort::Session session{nullptr};
 //    
