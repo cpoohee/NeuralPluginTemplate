@@ -12,10 +12,13 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
                     
                 })
 {
-//    env = Ort::Env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "Default"));
+    env = Ort::Env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "Default"));
+//    #if JUCE_MAC
 //    auto model_path = std::string("aw_wavenet.onnx").c_str();
-//    session = Ort::Session(env, model_path, Ort::SessionOptions{nullptr});
-//    session = Ort::Session(env, L"/models/aw_wavenet.onnx", Ort::SessionOptions{nullptr});
+//    #endif
+    auto bundle = juce::File::getSpecialLocation (juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    auto model_file = bundle.getChildFile ("Resources/model/aw_wavenet.onnx");
+    session = Ort::Session(env, model_file.getFullPathName().toRawUTF8() , Ort::SessionOptions{nullptr});
     
     // Add a sub-tree to store the state of our UI
     state.state.addChild ({ "uiState", { { "width",  600 }, { "height", 450 } }, {} }, -1, nullptr);
