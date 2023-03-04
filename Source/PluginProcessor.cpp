@@ -161,18 +161,19 @@ bool NeuralDoublerAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 void NeuralDoublerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     jassert (! isUsingDoublePrecision());
-    process (buffer, dryBuffer_float);
+    process (buffer, dryBuffer_float, dryQueue_float);
 }
 
 void NeuralDoublerAudioProcessor::processBlock (AudioBuffer<double>& buffer, MidiBuffer& midiMessages)
 {
     jassert (isUsingDoublePrecision());
-    process (buffer, dryBuffer_double);
+    process (buffer, dryBuffer_double, dryQueue_double);
 }
 
 template <typename FloatType>
 void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
-                                          AudioBuffer<FloatType>& dry_buffer)
+                                          AudioBuffer<FloatType>& dry_buffer,
+                                          std::queue<FloatType>& dryQueue)
 {
     // deal with it
     if (buffer.getNumSamples() == 0){
@@ -196,7 +197,7 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
     // guaranteed to be empty - they may contain garbage).
     for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
         buffer.clear (i, 0, numSamples);
-
+    
     // Apply our gain change to the outgoing data..
     applyGain (buffer, Decibels::decibelsToGain(preGainParamValue));
     
@@ -216,25 +217,64 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
             inputRMS[i].setCurrentAndTargetValue(channelRMS); // immediate set to target
         }
     }
+        
+    // Dry data sent to fifo buffer
+    bool isStereo = (buffer.getNumChannels()>=2)? true:false;
     
-    // add dry signal
-    for (auto i = 0; i < buffer.getNumChannels(); ++i)
+    if (isStereo)
     {
-        dry_buffer.copyFrom(i, 0, buffer.getWritePointer(i), buffer.getNumSamples());
+        // only push left or mono channel
+        const FloatType * readBuf1 = buffer.getReadPointer(0);
+        const FloatType * readBuf2 = buffer.getReadPointer(1);
+        int bufSize = buffer.getNumSamples();
+        for (auto i = 0; i < bufSize; ++i)
+        {
+            dryQueue.push(readBuf1[i] + readBuf2[i]); // sum up
+        }
     }
-    
+    else{
+        const FloatType * readBuf = buffer.getReadPointer(0);
+        int bufSize = buffer.getNumSamples();
+        for (auto i = 0; i < bufSize; ++i)
+        {
+            dryQueue.push(readBuf[i]);
+        }
+    }
+
     // process wet
-    
     applyModel(buffer);
     
-    // add wet
+    // update new number of samples
+    numSamples = buffer.getNumSamples();
+    
+    // pop number of samples from fifo dry buffer, match with sample size after model output
+    int channelSize = (isStereo)? 2 : 1;
+    dry_buffer.setSize(channelSize, numSamples);
+    if (isStereo)
+    {
+        for (int i = 0; i < numSamples; ++i){
+            dry_buffer.setSample(0, i, dryQueue.front());
+            dry_buffer.setSample(1, i, dryQueue.front());
+            dryQueue.pop();
+        }
+    }
+    else
+    {
+        for (int i = 0; i < numSamples; ++i){
+            dry_buffer.setSample(0, i, dryQueue.front());
+            dryQueue.pop();
+        }
+    }
+    
+    
+    // mix wet and dry
     applyMixing(buffer, dry_buffer, mixParamValue);
         
     // apply output gain
     applyGain (buffer, Decibels::decibelsToGain(postGainParamValue));
     
     // calculate output rms for metering
-    for (auto i = 0; i < getTotalNumOutputChannels(); ++i)
+    for (auto i = 0; i < buffer.getNumChannels(); ++i)
     {
         const auto channelRMS =  static_cast<float>(Decibels::gainToDecibels(buffer.getRMSLevel(i, 0, numSamples)));
         
@@ -309,8 +349,7 @@ template <typename FloatType>
 void NeuralDoublerAudioProcessor::applyModel(AudioBuffer<FloatType>& buffer)
 {
     // TO FIX THIS
-    onnxModel.process(buffer.getArrayOfReadPointers(), buffer.getArrayOfWritePointers(),
-                        buffer.getNumSamples());
+    onnxModel.process(buffer);
 }
 
 template <typename FloatType>

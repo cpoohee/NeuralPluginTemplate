@@ -65,7 +65,7 @@ private:
     void applyModel(AudioBuffer<FloatType>& buffer);
     
     template <typename FloatType>
-    void process (AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dry_buffer);
+    void process (AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dry_buffer, std::queue<FloatType>& dryQueue);
     
     template <typename FloatType>
     void applyGain (AudioBuffer<FloatType>& buffer, float gainLevel);
@@ -83,6 +83,9 @@ private:
     
     AudioBuffer<float> dryBuffer_float;
     AudioBuffer<double> dryBuffer_double;
+    
+    std::queue<float> dryQueue_float;
+    std::queue<double> dryQueue_double;
 
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeuralDoublerAudioProcessor)

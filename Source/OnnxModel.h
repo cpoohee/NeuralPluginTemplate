@@ -2,6 +2,7 @@
 
 #include <JuceHeader.h>
 #include "onnxruntime_cxx_api.h"
+#include <type_traits>
 
 class OnnxModel
 {
@@ -13,10 +14,8 @@ public:
     
     void prepareToPlay (double sampleRate, int samplesPerBlock);
     
-    template <typename FloatType>
-    void process(const FloatType **inputData, FloatType **outputData, int numSamples);
-    void process(const double **inputData, double **outputData, int numSamples);
-    void process(const float **inputData, float **outputData, int numSamples);
+    void process(AudioBuffer<float>& buffer);
+    void process(AudioBuffer<double>& buffer);
     
 private:
     Ort::Env env;
@@ -28,7 +27,8 @@ private:
     int currentBlockSize;
     int currentSampleRate;
     
-    AudioBuffer<float> fifoData;
+    std::queue<float> fifoData;
+    
     
 //    Ort::Value input_tensor_{nullptr};
 //    std::array<float32_t, 3> input_shape_{1, 1, blocksize};
