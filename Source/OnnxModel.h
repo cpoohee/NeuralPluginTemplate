@@ -17,6 +17,8 @@ public:
     void process(AudioBuffer<float>& buffer);
     void process(AudioBuffer<double>& buffer);
     
+    void reset();
+    
 private:
     Ort::Env env;
     Ort::Session session{nullptr};
@@ -28,11 +30,15 @@ private:
     int currentSampleRate;
     
     std::queue<float> fifoData;
+    Interpolators::Lagrange lagrangeInterpolator;
     
+    void downsample(AudioBuffer<float> &buffer);
+    void upsample(AudioBuffer<float> &buffer);
     
-//    Ort::Value input_tensor_{nullptr};
-//    std::array<float32_t, 3> input_shape_{1, 1, blocksize};
-//
-//    Ort::Value output_tensor_{nullptr};
-//    std::array<float32_t, 3> output_shape_{1, 1, blocksize};
+    Ort::Value input_tensor{nullptr};
+    Ort::Value output_tensor{nullptr};
+    std::vector<const char*> input_node_names;
+    std::vector<const char*> output_node_names;
+    Ort::AllocatorWithDefaultOptions allocator;
+    std::vector<float> input_tensor_values;
 };

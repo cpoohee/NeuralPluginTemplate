@@ -205,7 +205,7 @@ void NeuralDoublerAudioProcessorEditor::resetMeters()
     }
     for (int i = 0; i < outputChannels; ++i)
     {
-        outputMeters.add(new Gui::LevelMeter(-100.0f, 0.0f));
+        outputMeters.add(new Gui::LevelMeter(-100.0f, 12.0f));
         addAndMakeVisible(outputMeters[i]);
     }
 }

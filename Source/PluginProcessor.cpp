@@ -130,6 +130,9 @@ void NeuralDoublerAudioProcessor::reset()
     
     // reset meter values
     resetMeterValues();
+    
+    // resets onnxmodel fifo and interpolator
+    onnxModel.reset();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -348,7 +351,6 @@ void NeuralDoublerAudioProcessor::resetMeterValues()
 template <typename FloatType>
 void NeuralDoublerAudioProcessor::applyModel(AudioBuffer<FloatType>& buffer)
 {
-    // TO FIX THIS
     onnxModel.process(buffer);
 }
 
