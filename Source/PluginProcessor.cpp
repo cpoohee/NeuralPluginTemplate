@@ -1,32 +1,26 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
 
 //==============================================================================
 NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
-#ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
-                     #if ! JucePlugin_IsMidiEffect
-                      #if ! JucePlugin_IsSynth
-                       .withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
-                      #endif
-                       .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
-                     #endif
-                       )
-#endif
+: AudioProcessor (getBusesProperties()),
+                state (*this, nullptr, "state",
+                       { std::make_unique<AudioParameterFloat> (ParameterID { "preGain",  1 }, "Input",  NormalisableRange<float> (-100.0f, 12.0f, 0.1f, 4.f), 0.0f),  // start, end, interval, skew
+                         std::make_unique<AudioParameterFloat> (ParameterID { "postGain", 1 }, "Output", NormalisableRange<float>(-100.0f, 12.0f, 0.1f, 4.f), 0.0f),
+                         std::make_unique<AudioParameterFloat> (ParameterID { "mix", 1 }, "Wet/Dry", NormalisableRange<float> (0.0f, 100.0f, 0.1f), 100.0f),
+                    
+                })
 {
 //    env = Ort::Env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "Default"));
 //    auto model_path = std::string("aw_wavenet.onnx").c_str();
 //    session = Ort::Session(env, model_path, Ort::SessionOptions{nullptr});
 //    session = Ort::Session(env, L"/models/aw_wavenet.onnx", Ort::SessionOptions{nullptr});
+    
+    // Add a sub-tree to store the state of our UI
+    state.state.addChild ({ "uiState", { { "width",  600 }, { "height", 450 } }, {} }, -1, nullptr);
+
+    resetMeterValues();
 }
 
 NeuralDoublerAudioProcessor::~NeuralDoublerAudioProcessor()
@@ -36,7 +30,7 @@ NeuralDoublerAudioProcessor::~NeuralDoublerAudioProcessor()
 //==============================================================================
 const juce::String NeuralDoublerAudioProcessor::getName() const
 {
-    return JucePlugin_Name;
+    return "Neural Doubler";
 }
 
 bool NeuralDoublerAudioProcessor::acceptsMidi() const
@@ -98,14 +92,39 @@ void NeuralDoublerAudioProcessor::changeProgramName (int index, const juce::Stri
 //==============================================================================
 void NeuralDoublerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    // reinitilise meter
+    for (auto i = 0; i < inputRMS.size(); ++i)
+        inputRMS[i].reset(sampleRate, 0.5f);
+                    
+    for (auto i = 0; i < outputRMS.size(); ++i)
+        outputRMS[i].reset(sampleRate, 0.5f);
+    
+    if (isUsingDoublePrecision())
+    {
+        dryBuffer_double.setSize (getTotalNumInputChannels(), samplesPerBlock);
+        dryBuffer_float .setSize (1, 1);
+    }
+    else
+    {
+        dryBuffer_float.setSize (getTotalNumInputChannels(), samplesPerBlock);
+        dryBuffer_double.setSize (1, 1);
+    }
 }
 
 void NeuralDoublerAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
+}
+
+void NeuralDoublerAudioProcessor::reset()
+{
+    // reset temp buffers
+    dryBuffer_float.clear();
+    dryBuffer_double.clear();
+    
+    // reset meter values
+    resetMeterValues();
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
@@ -134,32 +153,96 @@ bool NeuralDoublerAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 }
 #endif
 
-void NeuralDoublerAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
+void NeuralDoublerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
-    juce::ScopedNoDenormals noDenormals;
-    auto totalNumInputChannels  = getTotalNumInputChannels();
-    auto totalNumOutputChannels = getTotalNumOutputChannels();
+    jassert (! isUsingDoublePrecision());
+    process (buffer, dryBuffer_float);
+}
 
-    // In case we have more outputs than inputs, this code clears any output
+void NeuralDoublerAudioProcessor::processBlock (AudioBuffer<double>& buffer, MidiBuffer& midiMessages)
+{
+    jassert (isUsingDoublePrecision());
+    process (buffer, dryBuffer_double);
+}
+
+template <typename FloatType>
+void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
+                                          AudioBuffer<FloatType>& dry_buffer)
+{
+    // deal with it
+    if (buffer.getNumSamples() == 0){
+        return; // there is nothing to do
+    }
+    
+    //Returns 0 to 1 values
+    auto preGainRawValue  = state.getParameter ("preGain")->getValue();
+    auto postGainRawValue = state.getParameter ("postGain")->getValue();
+    auto mixRawValue = state.getParameter("mix")->getValue();
+    
+    // convert back to representation
+    auto preGainParamValue  = state.getParameter ("preGain")->convertFrom0to1(preGainRawValue);
+    auto postGainParamValue  = state.getParameter ("postGain")->convertFrom0to1(postGainRawValue);
+    auto mixParamValue  = mixRawValue;
+    
+    auto numSamples = buffer.getNumSamples();
+
+    // In case we have more outputs than inputs, we'll clear any output
     // channels that didn't contain input data, (because these aren't
     // guaranteed to be empty - they may contain garbage).
-    // This is here to avoid people getting screaming feedback
-    // when they first compile a plugin, but obviously you don't need to keep
-    // this code if your algorithm always overwrites all the output channels.
-    for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+    for (auto i = getTotalNumInputChannels(); i < getTotalNumOutputChannels(); ++i)
+        buffer.clear (i, 0, numSamples);
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    for (int channel = 0; channel < totalNumInputChannels; ++channel)
+    // Apply our gain change to the outgoing data..
+    applyGain (buffer, Decibels::decibelsToGain(preGainParamValue));
+    
+    // calculate input rms for metering
+    for (auto i = 0; i < getTotalNumInputChannels(); ++i)
     {
-        auto* channelData = buffer.getWritePointer (channel);
-
-        // ..do something to the data...
+        const auto channelRMS =  static_cast<float>(Decibels::gainToDecibels(buffer.getRMSLevel(i, 0, numSamples)));
+        
+        inputRMS[i].skip(numSamples);
+        
+        if (channelRMS < inputRMS[i].getCurrentValue())
+        {
+            inputRMS[i].setTargetValue(channelRMS); // smooth down
+        }
+        else
+        {
+            inputRMS[i].setCurrentAndTargetValue(channelRMS); // immediate set to target
+        }
+    }
+    
+    // add dry signal
+    for (auto i = 0; i < buffer.getNumChannels(); ++i)
+    {
+        dry_buffer.copyFrom(i, 0, buffer.getWritePointer(i), buffer.getNumSamples());
+    }
+    
+    // process wet
+    
+    // TODO!
+    
+    // add wet
+    applyMixing(buffer, dry_buffer, mixParamValue);
+        
+    // apply output gain
+    applyGain (buffer, Decibels::decibelsToGain(postGainParamValue));
+    
+    // calculate output rms for metering
+    for (auto i = 0; i < getTotalNumOutputChannels(); ++i)
+    {
+        const auto channelRMS =  static_cast<float>(Decibels::gainToDecibels(buffer.getRMSLevel(i, 0, numSamples)));
+        
+        outputRMS[i].skip(numSamples);
+        
+        if (channelRMS < outputRMS[i].getCurrentValue())
+        {
+            outputRMS[i].setTargetValue(channelRMS); // smooth down
+        }
+        else
+        {
+            outputRMS[i].setCurrentAndTargetValue(channelRMS); // immediate targt
+        }
     }
 }
 
@@ -175,17 +258,19 @@ juce::AudioProcessorEditor* NeuralDoublerAudioProcessor::createEditor()
 }
 
 //==============================================================================
-void NeuralDoublerAudioProcessor::getStateInformation (juce::MemoryBlock& destData)
+void NeuralDoublerAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
-    // You should use this method to store your parameters in the memory block.
-    // You could do that either as raw data, or use the XML or ValueTree classes
-    // as intermediaries to make it easy to save and load complex data.
+    // Store an xml representation of our state.
+    if (auto xmlState = state.copyState().createXml())
+        copyXmlToBinary (*xmlState, destData);
 }
 
 void NeuralDoublerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
-    // You should use this method to restore your parameters from this memory block,
-    // whose contents will have been created by the getStateInformation() call.
+    // Restore our plug-in's state from the xml representation stored in the above
+    // method.
+    if (auto xmlState = getXmlFromBinary (data, sizeInBytes))
+        state.replaceState (ValueTree::fromXml (*xmlState));
 }
 
 //==============================================================================
@@ -193,4 +278,65 @@ void NeuralDoublerAudioProcessor::setStateInformation (const void* data, int siz
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
     return new NeuralDoublerAudioProcessor();
+}
+
+void NeuralDoublerAudioProcessor::resetMeterValues()
+{
+    inputRMS.clear();
+    outputRMS.clear();
+    
+    for (auto i = 0; i < getTotalNumInputChannels(); ++i)
+    {
+        juce::LinearSmoothedValue<float> val;
+        val.setTargetValue(-100.0f);
+        inputRMS.push_back(val);
+    }
+                    
+    for (auto i = 0; i < getTotalNumOutputChannels(); ++i)
+    {
+        juce::LinearSmoothedValue<float> val;
+        val.setTargetValue(-100.0f);
+        outputRMS.push_back(val);
+    }
+}
+
+template <typename FloatType>
+void NeuralDoublerAudioProcessor::applyMixing(AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dryBuffer, float mix)
+{
+    // use linear
+    auto dryValue = (1.0f) - mix;
+    auto wetValue = mix;
+
+    buffer.applyGain(wetValue);
+    dryBuffer.applyGain(dryValue);
+    
+    for (auto i = 0; i < getTotalNumOutputChannels(); ++i)
+        buffer.addFrom(i, 0, dryBuffer, i, 0, buffer.getNumSamples());
+}
+
+template <typename FloatType>
+void NeuralDoublerAudioProcessor::applyGain (AudioBuffer<FloatType>& buffer, float gainLevel)
+{
+    for (auto channel = 0; channel < getTotalNumOutputChannels(); ++channel)
+        buffer.applyGain (channel, 0, buffer.getNumSamples(), gainLevel);
+}
+
+std::vector<float> NeuralDoublerAudioProcessor::getInputRMSValue()
+{
+    std::vector<float> rmsValues;
+    for (auto i : inputRMS)
+    {
+        rmsValues.push_back(i.getCurrentValue());
+    }
+    return rmsValues;
+}
+
+std::vector<float> NeuralDoublerAudioProcessor::getOutputRMSValue()
+{
+    std::vector<float> rmsValues;
+    for (auto i : outputRMS)
+    {
+        rmsValues.push_back(i.getCurrentValue());
+    }
+    return rmsValues;
 }

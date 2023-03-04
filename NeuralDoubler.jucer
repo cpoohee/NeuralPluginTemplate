@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <JUCERPROJECT id="ASrHHg" name="NeuralDoubler" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="0" jucerFormatVersion="1" companyName="SonicVitamin"
-              pluginManufacturerCode="Sovi" pluginCode="Nudo" pluginName="NuDoub"
+              addUsingNamespaceToJuceHeader="1" jucerFormatVersion="1" companyName="SonicVitamin"
+              pluginManufacturerCode="Sovi" pluginCode="Nudo" pluginName="NeuDoub"
               maxBinaryFileSize="20971520" version="0.1.0">
   <MAINGROUP id="irAECy" name="NeuralDoubler">
     <GROUP id="{CE71D24B-3EE9-1A32-F0C4-60195F2D2F4F}" name="Source">
+      <FILE id="HzXpkO" name="NumeralSlider.h" compile="0" resource="0" file="Source/NumeralSlider.h"/>
+      <FILE id="qa9wul" name="LevelMeter.h" compile="0" resource="0" file="Source/LevelMeter.h"/>
+      <FILE id="RM0LEX" name="SonicLookAndFeel.h" compile="0" resource="0"
+            file="Source/SonicLookAndFeel.h"/>
+      <FILE id="ytnplH" name="DecibelSlider.h" compile="0" resource="0" file="Source/DecibelSlider.h"/>
       <FILE id="oyJp3G" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
       <FILE id="wlefQg" name="PluginProcessor.h" compile="0" resource="0"

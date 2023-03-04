@@ -71,6 +71,7 @@
 		00DFE6538ACF0AC222669789 /* juce_audio_devices */ /* juce_audio_devices */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_devices; path = "~/JUCE/modules/juce_audio_devices"; sourceTree = "<absolute>"; };
 		0D6D47BE19E1686AA04C49F1 /* juce_data_structures */ /* juce_data_structures */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_data_structures; path = "~/JUCE/modules/juce_data_structures"; sourceTree = "<absolute>"; };
 		0E8ACBEE605F320FCA3374B5 /* AudioToolbox.framework */ /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
+		13CA27B28897710E31080505 /* DecibelSlider.h */ /* DecibelSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = DecibelSlider.h; path = ../../Source/DecibelSlider.h; sourceTree = SOURCE_ROOT; };
 		17C52F3916A39B32ACD8B716 /* CoreAudioKit.framework */ /* CoreAudioKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudioKit.framework; path = System/Library/Frameworks/CoreAudioKit.framework; sourceTree = SDKROOT; };
 		21B1C35EE91B6B837E740892 /* juce_audio_processors */ /* juce_audio_processors */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_processors; path = "~/JUCE/modules/juce_audio_processors"; sourceTree = "<absolute>"; };
 		227BCDFB8237AF0AE25F348E /* include_juce_audio_devices.mm */ /* include_juce_audio_devices.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_devices.mm; path = ../../JuceLibraryCode/include_juce_audio_devices.mm; sourceTree = SOURCE_ROOT; };
@@ -83,6 +84,7 @@
 		3284962042DE59489D9FC3EF /* include_juce_audio_plugin_client_Standalone.cpp */ /* include_juce_audio_plugin_client_Standalone.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = include_juce_audio_plugin_client_Standalone.cpp; path = ../../JuceLibraryCode/include_juce_audio_plugin_client_Standalone.cpp; sourceTree = SOURCE_ROOT; };
 		34E9D71EE85C0FE56ADA3F1F /* juce_graphics */ /* juce_graphics */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_graphics; path = "~/JUCE/modules/juce_graphics"; sourceTree = "<absolute>"; };
 		365E444FACD9E3F45E497349 /* Accelerate.framework */ /* Accelerate.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Accelerate.framework; path = System/Library/Frameworks/Accelerate.framework; sourceTree = SDKROOT; };
+		396CA9D311EC6C51376E0AB6 /* NumeralSlider.h */ /* NumeralSlider.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = NumeralSlider.h; path = ../../Source/NumeralSlider.h; sourceTree = SOURCE_ROOT; };
 		3E4B03E695272E1AB0AE728E /* Info-VST3.plist */ /* Info-VST3.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-VST3.plist"; path = "Info-VST3.plist"; sourceTree = SOURCE_ROOT; };
 		3E7380F302CB1C48C56940E3 /* lib */ /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; name = lib; path = "../../../../onnxruntime/onnxruntime-osx-universal2-1.14.1/lib"; sourceTree = "<group>"; };
 		3E9C9DF04C26FEC3354BD0AA /* PluginEditor.h */ /* PluginEditor.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = PluginEditor.h; path = ../../Source/PluginEditor.h; sourceTree = SOURCE_ROOT; };
@@ -96,9 +98,11 @@
 		602AC17EAC852FCAC5319B74 /* include_juce_audio_formats.mm */ /* include_juce_audio_formats.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_formats.mm; path = ../../JuceLibraryCode/include_juce_audio_formats.mm; sourceTree = SOURCE_ROOT; };
 		635BF8A9EB4B1522C3F27216 /* JuceHeader.h */ /* JuceHeader.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JuceHeader.h; path = ../../JuceLibraryCode/JuceHeader.h; sourceTree = SOURCE_ROOT; };
 		65959CE06900CE205054E221 /* AudioUnit.framework */ /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
+		6A592B30A861BDFE376F44FE /* SonicLookAndFeel.h */ /* SonicLookAndFeel.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SonicLookAndFeel.h; path = ../../Source/SonicLookAndFeel.h; sourceTree = SOURCE_ROOT; };
 		6F06CC5D4C33579D82D9329C /* include_juce_audio_processors.mm */ /* include_juce_audio_processors.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_audio_processors.mm; path = ../../JuceLibraryCode/include_juce_audio_processors.mm; sourceTree = SOURCE_ROOT; };
 		73D9F4DA2FFD6C790CC1BB7F /* JucePluginDefines.h */ /* JucePluginDefines.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = JucePluginDefines.h; path = ../../JuceLibraryCode/JucePluginDefines.h; sourceTree = SOURCE_ROOT; };
 		75ABAC4CF626DCE909768C78 /* include_juce_gui_extra.mm */ /* include_juce_gui_extra.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = include_juce_gui_extra.mm; path = ../../JuceLibraryCode/include_juce_gui_extra.mm; sourceTree = SOURCE_ROOT; };
+		7BDA4A85B9FBDFB04B9AA2B8 /* LevelMeter.h */ /* LevelMeter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = LevelMeter.h; path = ../../Source/LevelMeter.h; sourceTree = SOURCE_ROOT; };
 		7CC34B6DA450AB1533D48828 /* juce_audio_formats */ /* juce_audio_formats */ = {isa = PBXFileReference; lastKnownFileType = folder; name = juce_audio_formats; path = "~/JUCE/modules/juce_audio_formats"; sourceTree = "<absolute>"; };
 		85C0E32337CC5BDC21AFF447 /* RecentFilesMenuTemplate.nib */ /* RecentFilesMenuTemplate.nib */ = {isa = PBXFileReference; lastKnownFileType = file.nib; name = RecentFilesMenuTemplate.nib; path = RecentFilesMenuTemplate.nib; sourceTree = SOURCE_ROOT; };
 		8AD33A65B46EDA36064AE1DE /* Info-Standalone_Plugin.plist */ /* Info-Standalone_Plugin.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info-Standalone_Plugin.plist"; path = "Info-Standalone_Plugin.plist"; sourceTree = SOURCE_ROOT; };
@@ -234,6 +238,10 @@
 		1B8F79E513C85145336BA563 /* Source */ = {
 			isa = PBXGroup;
 			children = (
+				396CA9D311EC6C51376E0AB6,
+				7BDA4A85B9FBDFB04B9AA2B8,
+				6A592B30A861BDFE376F44FE,
+				13CA27B28897710E31080505,
 				F0F2246B7A1CF9715E942160,
 				DDBB5450A959F84B33458820,
 				E10DE67D7340571A67E9B7FC,
@@ -695,7 +703,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -727,7 +735,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -811,7 +819,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -843,7 +851,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -927,7 +935,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -959,7 +967,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -1046,7 +1054,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -1078,7 +1086,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -1217,7 +1225,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -1249,7 +1257,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -1339,7 +1347,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -1371,7 +1379,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -1458,7 +1466,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -1490,7 +1498,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",
@@ -1575,7 +1583,7 @@
 					"JucePlugin_Build_LV2=0",
 					"JucePlugin_Enable_IAA=0",
 					"JucePlugin_Enable_ARA=0",
-					"JucePlugin_Name=\\\"NuDoub\\\"",
+					"JucePlugin_Name=\\\"NeuDoub\\\"",
 					"JucePlugin_Desc=\\\"NeuralDoubler\\\"",
 					"JucePlugin_Manufacturer=\\\"SonicVitamin\\\"",
 					"JucePlugin_ManufacturerWebsite=\\\"www.SonicVitamin.com\\\"",
@@ -1607,7 +1615,7 @@
 					"JucePlugin_AAXDisableMultiMono=0",
 					"JucePlugin_IAAType=0x61757278",
 					"JucePlugin_IAASubType=JucePlugin_PluginCode",
-					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NuDoub\\\"",
+					"JucePlugin_IAAName=\\\"SonicVitamin:\\ NeuDoub\\\"",
 					"JucePlugin_VSTNumMidiInputs=16",
 					"JucePlugin_VSTNumMidiOutputs=16",
 					"JucePlugin_ARAContentTypes=0",

@@ -41,7 +41,7 @@
  #define JucePlugin_Enable_ARA             0
 #endif
 #ifndef  JucePlugin_Name
- #define JucePlugin_Name                   "NuDoub"
+ #define JucePlugin_Name                   "NeuDoub"
 #endif
 #ifndef  JucePlugin_Desc
  #define JucePlugin_Desc                   "NeuralDoubler"
@@ -137,7 +137,7 @@
  #define JucePlugin_IAASubType             JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_IAAName
- #define JucePlugin_IAAName                "SonicVitamin: NuDoub"
+ #define JucePlugin_IAAName                "SonicVitamin: NeuDoub"
 #endif
 #ifndef  JucePlugin_VSTNumMidiInputs
  #define JucePlugin_VSTNumMidiInputs       16

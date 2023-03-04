@@ -1,11 +1,3 @@
-/*
-  ==============================================================================
-
-    This file contains the basic framework code for a JUCE plugin processor.
-
-  ==============================================================================
-*/
-
 #pragma once
 
 #include <JuceHeader.h>
@@ -27,13 +19,16 @@ public:
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
     void releaseResources() override;
+    
+    void reset() override;
 
    #ifndef JucePlugin_PreferredChannelConfigurations
     bool isBusesLayoutSupported (const BusesLayout& layouts) const override;
    #endif
-
-    void processBlock (juce::AudioBuffer<float>&, juce::MidiBuffer&) override;
-
+    
+    void processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages) override;
+    void processBlock (AudioBuffer<double>& buffer, MidiBuffer& midiMessages) override;
+    
     //==============================================================================
     juce::AudioProcessorEditor* createEditor() override;
     bool hasEditor() const override;
@@ -52,10 +47,16 @@ public:
     void setCurrentProgram (int index) override;
     const juce::String getProgramName (int index) override;
     void changeProgramName (int index, const juce::String& newName) override;
+    
+    // Our plug-in's current state
+    juce::AudioProcessorValueTreeState state;
 
     //==============================================================================
-    void getStateInformation (juce::MemoryBlock& destData) override;
+    void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
+    
+    std::vector<float> getInputRMSValue();
+    std::vector<float> getOutputRMSValue();
 
 private:
     //==============================================================================
@@ -69,6 +70,27 @@ private:
 //
 //    Ort::Value output_tensor_{nullptr};
 //    std::array<float32_t, 3> output_shape_{1, 1, blocksize};
+    
+    template <typename FloatType>
+    void process (AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dry_buffer);
+    
+    template <typename FloatType>
+    void applyGain (AudioBuffer<FloatType>& buffer, float gainLevel);
+    
+    template <typename FloatType>
+    void applyMixing(AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dryBuffer, float mix);
+    
+    std::vector<juce::LinearSmoothedValue<float>> inputRMS, outputRMS;
+    void resetMeterValues();
+    
+    static BusesProperties getBusesProperties(){
+        return BusesProperties().withInput  ("Input",  juce::AudioChannelSet::stereo(), true)
+                                .withOutput ("Output", juce::AudioChannelSet::stereo(), true);
+    }
+    
+    AudioBuffer<float> dryBuffer_float;
+    AudioBuffer<double> dryBuffer_double;
+
     
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeuralDoublerAudioProcessor)
 };
