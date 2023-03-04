@@ -24,6 +24,7 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
     state.state.addChild ({ "uiState", { { "width",  600 }, { "height", 450 } }, {} }, -1, nullptr);
 
     resetMeterValues();
+    setLatencySamples(blocksize);
 }
 
 NeuralDoublerAudioProcessor::~NeuralDoublerAudioProcessor()
@@ -66,6 +67,11 @@ bool NeuralDoublerAudioProcessor::isMidiEffect() const
 double NeuralDoublerAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
+}
+
+int NeuralDoublerAudioProcessor::getLatencySamples() const
+{
+    return blocksize;
 }
 
 int NeuralDoublerAudioProcessor::getNumPrograms()
@@ -223,7 +229,7 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
     
     // process wet
     
-    // TODO!
+    applyModel(buffer);
     
     // add wet
     applyMixing(buffer, dry_buffer, mixParamValue);
@@ -301,6 +307,47 @@ void NeuralDoublerAudioProcessor::resetMeterValues()
         val.setTargetValue(-100.0f);
         outputRMS.push_back(val);
     }
+}
+
+template <typename FloatType>
+void NeuralDoublerAudioProcessor::applyModel(AudioBuffer<FloatType>& buffer)
+{
+    // TODO HMMM NEED FIFO BUFFER TO process a fixed size block.. to think about it
+    
+    // inference code here!
+    constexpr size_t input_tensor_size = blocksize;  // simplify ... using known dim values to calculate size
+                                                           // use OrtGetTensorShapeElementCount() to get official size!
+
+    std::vector<float> input_tensor_values(input_tensor_size);
+    std::vector<const char*> output_node_names = {"output1"};
+
+    // initialize input data with values in [0.0, 1.0]
+    for (unsigned int i = 0; i < input_tensor_size; i++)
+    {
+        input_tensor_values[i] = buffer;
+    }
+    
+    FloatType* buf_start = buffer.getWritePointer(0); // get the pointer to the first sample of the first channel
+    int buf_size = buffer.getNumSamples();
+    std::vector<FloatType> generic_vector (start, start + size);
+    std::vector<float> input_tensor_values(generic_vector.begin(), generic_vector.end());
+    
+
+    // create input tensor object from data values
+    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+    auto input_tensor = Ort::Value::CreateTensor<float>(memory_info, input_tensor_values.data(), input_tensor_size,
+                                                            input_node_dims.data(), 4);
+    assert(input_tensor.IsTensor());
+
+    // score model & input tensor, get back output tensor
+    auto output_tensors =
+      session.Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor, 1, output_node_names.data(), 1);
+    assert(output_tensors.size() == 1 && output_tensors.front().IsTensor());
+
+    // Get pointer to output tensor float values
+    float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+    assert(abs(floatarr[0] - 0.000045) < 1e-6);
+    
 }
 
 template <typename FloatType>

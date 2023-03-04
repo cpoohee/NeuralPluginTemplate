@@ -40,6 +40,7 @@ public:
     bool producesMidi() const override;
     bool isMidiEffect() const override;
     double getTailLengthSeconds() const override;
+    int getLatencySamples() const override;
 
     //==============================================================================
     int getNumPrograms() override;
@@ -70,6 +71,9 @@ private:
 
     Ort::Value output_tensor_{nullptr};
     std::array<float32_t, 3> output_shape_{1, 1, blocksize};
+    
+    template <typename FloatType>
+    void applyModel(AudioBuffer<FloatType>& buffer);
     
     template <typename FloatType>
     void process (AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dry_buffer);
