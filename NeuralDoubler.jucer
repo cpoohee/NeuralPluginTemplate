@@ -6,6 +6,8 @@
               maxBinaryFileSize="20971520" version="0.1.0">
   <MAINGROUP id="irAECy" name="NeuralDoubler">
     <GROUP id="{CE71D24B-3EE9-1A32-F0C4-60195F2D2F4F}" name="Source">
+      <FILE id="FXQXIZ" name="OnnxModel.cpp" compile="1" resource="0" file="Source/OnnxModel.cpp"/>
+      <FILE id="Zj4BYH" name="OnnxModel.h" compile="0" resource="0" file="Source/OnnxModel.h"/>
       <FILE id="HzXpkO" name="NumeralSlider.h" compile="0" resource="0" file="Source/NumeralSlider.h"/>
       <FILE id="qa9wul" name="LevelMeter.h" compile="0" resource="0" file="Source/LevelMeter.h"/>
       <FILE id="RM0LEX" name="SonicLookAndFeel.h" compile="0" resource="0"

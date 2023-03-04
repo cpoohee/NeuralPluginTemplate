@@ -1,8 +1,7 @@
 #pragma once
 
 #include <JuceHeader.h>
-#include "onnxruntime_cxx_api.h"
-
+#include "OnnxModel.h"
 //==============================================================================
 /**
 */
@@ -40,7 +39,6 @@ public:
     bool producesMidi() const override;
     bool isMidiEffect() const override;
     double getTailLengthSeconds() const override;
-    int getLatencySamples() const override;
 
     //==============================================================================
     int getNumPrograms() override;
@@ -61,16 +59,7 @@ public:
 
 private:
     //==============================================================================
-    Ort::Env env;
-////    Ort::Session session_{env, L"/models/aw_wavenet.onnx", Ort::SessionOptions{nullptr}};
-    Ort::Session session{nullptr};
-    
-    static const int blocksize = 1024;
-    Ort::Value input_tensor_{nullptr};
-    std::array<float32_t, 3> input_shape_{1, 1, blocksize};
-
-    Ort::Value output_tensor_{nullptr};
-    std::array<float32_t, 3> output_shape_{1, 1, blocksize};
+    OnnxModel onnxModel;
     
     template <typename FloatType>
     void applyModel(AudioBuffer<FloatType>& buffer);

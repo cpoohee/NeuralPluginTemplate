@@ -12,19 +12,18 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
                     
                 })
 {
-    env = Ort::Env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "Default"));
-//    #if JUCE_MAC
-//    auto model_path = std::string("aw_wavenet.onnx").c_str();
-//    #endif
     auto bundle = juce::File::getSpecialLocation (juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
+    // to update these params for different models
     auto model_file = bundle.getChildFile ("Resources/model/aw_wavenet.onnx");
-    session = Ort::Session(env, model_file.getFullPathName().toRawUTF8() , Ort::SessionOptions{nullptr});
+    int modelSampleRate = 44100;
+    int modelBlockSize = 1024;
+    
+    onnxModel.setup(model_file, modelSampleRate, modelBlockSize);
     
     // Add a sub-tree to store the state of our UI
     state.state.addChild ({ "uiState", { { "width",  600 }, { "height", 450 } }, {} }, -1, nullptr);
 
     resetMeterValues();
-    setLatencySamples(blocksize);
 }
 
 NeuralDoublerAudioProcessor::~NeuralDoublerAudioProcessor()
@@ -67,11 +66,6 @@ bool NeuralDoublerAudioProcessor::isMidiEffect() const
 double NeuralDoublerAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
-}
-
-int NeuralDoublerAudioProcessor::getLatencySamples() const
-{
-    return blocksize;
 }
 
 int NeuralDoublerAudioProcessor::getNumPrograms()
@@ -118,6 +112,8 @@ void NeuralDoublerAudioProcessor::prepareToPlay (double sampleRate, int samplesP
         dryBuffer_float.setSize (getTotalNumInputChannels(), samplesPerBlock);
         dryBuffer_double.setSize (1, 1);
     }
+    
+    onnxModel.prepareToPlay(sampleRate, samplesPerBlock);
 }
 
 void NeuralDoublerAudioProcessor::releaseResources()
@@ -312,42 +308,9 @@ void NeuralDoublerAudioProcessor::resetMeterValues()
 template <typename FloatType>
 void NeuralDoublerAudioProcessor::applyModel(AudioBuffer<FloatType>& buffer)
 {
-    // TODO HMMM NEED FIFO BUFFER TO process a fixed size block.. to think about it
-    
-    // inference code here!
-    constexpr size_t input_tensor_size = blocksize;  // simplify ... using known dim values to calculate size
-                                                           // use OrtGetTensorShapeElementCount() to get official size!
-
-    std::vector<float> input_tensor_values(input_tensor_size);
-    std::vector<const char*> output_node_names = {"output1"};
-
-    // initialize input data with values in [0.0, 1.0]
-    for (unsigned int i = 0; i < input_tensor_size; i++)
-    {
-        input_tensor_values[i] = buffer;
-    }
-    
-    FloatType* buf_start = buffer.getWritePointer(0); // get the pointer to the first sample of the first channel
-    int buf_size = buffer.getNumSamples();
-    std::vector<FloatType> generic_vector (start, start + size);
-    std::vector<float> input_tensor_values(generic_vector.begin(), generic_vector.end());
-    
-
-    // create input tensor object from data values
-    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-    auto input_tensor = Ort::Value::CreateTensor<float>(memory_info, input_tensor_values.data(), input_tensor_size,
-                                                            input_node_dims.data(), 4);
-    assert(input_tensor.IsTensor());
-
-    // score model & input tensor, get back output tensor
-    auto output_tensors =
-      session.Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor, 1, output_node_names.data(), 1);
-    assert(output_tensors.size() == 1 && output_tensors.front().IsTensor());
-
-    // Get pointer to output tensor float values
-    float* floatarr = output_tensors.front().GetTensorMutableData<float>();
-    assert(abs(floatarr[0] - 0.000045) < 1e-6);
-    
+    // TO FIX THIS
+    onnxModel.process(buffer.getArrayOfReadPointers(), buffer.getArrayOfWritePointers(),
+                        buffer.getNumSamples());
 }
 
 template <typename FloatType>
