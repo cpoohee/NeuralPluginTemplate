@@ -17,48 +17,47 @@ void OnnxModel::setup(File modelPath, int modelSampleRate, int modelBlockSize)
     
     auto type_info = session.GetInputTypeInfo(0);
     auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
-    std::vector<int64_t>input_node_dims = tensor_info.GetShape();
+    input_node_dims = tensor_info.GetShape();
     
     int input_tensor_size = modelBlockSize;
     input_tensor_values = std::vector<float>(modelBlockSize);
-    
+
     const size_t num_input_nodes = session.GetInputCount();
     for (size_t i = 0; i < num_input_nodes; ++i)
     {
         auto input_name = session.GetInputNameAllocated(i, allocator);
         input_node_names.push_back(input_name.get());
     }
-    
+
     const size_t num_output_nodes = session.GetOutputCount();
     for (size_t i = 0; i < num_output_nodes; ++i)
     {
         auto output_name = session.GetOutputNameAllocated(i, allocator);
         output_node_names.push_back(output_name.get());
     }
+
+//    memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
+//    input_tensor = Ort::Value::CreateTensor<float>(memory_info,
+//                                                   input_tensor_values.data(),
+//                                                   input_tensor_size,
+//                                                   input_node_dims.data(),
+//                                                   input_node_dims.size());
     
-    
-    auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
-    input_tensor = Ort::Value::CreateTensor<float>(memory_info,
-                                                   input_tensor_values.data(),
-                                                   input_tensor_size,
-                                                   input_node_dims.data(),
-                                                   4);
-    
-    modelBlockSize = modelBlockSize; // maybe we can assign block size from loaded model specs
-    modelSampleRate = modelSampleRate;
+    modelBlockSize_ = modelBlockSize; // maybe we can assign block size from loaded model specs
+    modelSampleRate_ = modelSampleRate;
 }
 
 void OnnxModel::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // if DAW sample rate changes, we need to do down sample to 44100, or modelSampleRate
-    currentSampleRate= sampleRate;
-    currentBlockSize = samplesPerBlock;
+    currentSampleRate_ = sampleRate;
+    currentBlockSize_ = samplesPerBlock;
 }
 
 void OnnxModel::reset()
 {
     lagrangeInterpolator.reset();
-    fifoData = std::queue<float>(); //clear fifo
+//    fifoData = std::queue<float>(); //clear fifo
 }
 
 void OnnxModel::downsample(AudioBuffer<float> &buffer)
@@ -66,9 +65,9 @@ void OnnxModel::downsample(AudioBuffer<float> &buffer)
     bool isStereo = (buffer.getNumChannels()>=2)? true:false;
     
     //down sample if needed
-    if (currentSampleRate != modelSampleRate)
+    if (currentSampleRate_ != modelSampleRate_)
     {
-        float resampleRatio = currentSampleRate/(float)modelSampleRate;
+        float resampleRatio = currentSampleRate_/(float)modelSampleRate_;
         
         if (isStereo)
         {
@@ -96,9 +95,9 @@ void OnnxModel::upsample(AudioBuffer<float> &buffer)
     bool isStereo = (buffer.getNumChannels()>=2)? true:false;
     
     //down sample if needed
-    if (currentSampleRate != modelSampleRate)
+    if (currentSampleRate_ != modelSampleRate_)
     {
-        float resampleRatio = modelSampleRate/(float)currentSampleRate;
+        float resampleRatio = modelSampleRate_/(float)currentSampleRate_;
         
         if (isStereo)
         {
@@ -127,7 +126,7 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
     bool isStereo = (buffer.getNumChannels()>=2)? true:false;
     
     //down sample if needed
-    downsample(buffer);
+//    downsample(buffer);
 
     // convert to mono if stereo
     if (isStereo)
@@ -137,7 +136,7 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
 //        // copy the combined left (0) to the right (1)
 //        buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
     }
-    
+        
     // Store into FIFO
     const float * readBuf = buffer.getReadPointer(0);
     int bufSize = buffer.getNumSamples();
@@ -145,52 +144,67 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
     {
         fifoData.push(readBuf[i]);
     }
-    
+
     std::vector<float> processedData;
-    
+
+
     // when fifo buffer is large enough to do processing
-    while (fifoData.size() >= modelBlockSize)
+    int fifoSize = (int)fifoData.size(); // in case of next time, queue is accessed from other threads..
+    
+    while (fifoSize >= modelBlockSize_)
     {
         std::vector<float> fetchedData;
-        for (auto i = 0; i < modelBlockSize; ++i)
+        for (auto i = 0; i < modelBlockSize_; ++i)
         {
             input_tensor_values[i] = fifoData.front();
+            fetchedData.push_back(fifoData.front());// testing
             fifoData.pop();
+            
         }
+        fifoSize = fifoSize - modelBlockSize_;
+        auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
         
+        input_tensor = Ort::Value::CreateTensor<float>(memory_info,
+                                                       input_tensor_values.data(),
+                                                       modelBlockSize_,
+                                                       input_node_dims.data(),
+                                                       input_node_dims.size());
+
         auto output_tensors =
               session.Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor, 1, output_node_names.data(), 1);
-        
-        float* floatarr = output_tensors.front().GetTensorMutableData<float>();
-        
-        
-        for (auto i = 0; i < modelBlockSize; ++i)
-        {
-            fetchedData.push_back(floatarr[i]);
-        }
+//
+//        float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+//
+//        std::vector<float> fetchedData(modelBlockSize_);
+//        for (auto i = 0; i < modelBlockSize_; ++i)
+//        {
+//            fetchedData[i] = floatarr[i];
+//        }
+
         // transfer data to processed vector
-        processedData.insert(std::end(processedData),
-                             std::begin(fetchedData),
-                             std::end(fetchedData));
+        processedData.insert(processedData.end(),
+                             fetchedData.begin(),
+                             fetchedData.end());
     }
-    
+
     buffer.clear();
     // write back to audio buffer
     if (processedData.size() > 0)
     {
         int channelSize = (isStereo)? 2 : 1;
-            
+
         buffer.setSize(channelSize, static_cast<int>(processedData.size()));
         buffer.copyFrom(0, 0, &processedData[0], static_cast<int>(processedData.size()));
-        
+
         if (isStereo){
             // copy left to right
-            buffer.copyFrom(0, 0, buffer, 1, 0, buffer.getNumSamples());
+            buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
+            buffer.applyGain(0.5);
         }
     }
     
     // up sample if needed
-    upsample(buffer);
+//    upsample(buffer);
 }
 
 void OnnxModel::process(AudioBuffer<double>& buffer)

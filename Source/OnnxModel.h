@@ -23,11 +23,11 @@ private:
     Ort::Env env;
     Ort::Session session{nullptr};
     
-    int modelBlockSize;
-    int modelSampleRate;
+    int modelBlockSize_;
+    int modelSampleRate_;
     
-    int currentBlockSize;
-    int currentSampleRate;
+    int currentBlockSize_;
+    int currentSampleRate_;
     
     std::queue<float> fifoData;
     Interpolators::Lagrange lagrangeInterpolator;
@@ -41,4 +41,5 @@ private:
     std::vector<const char*> output_node_names;
     Ort::AllocatorWithDefaultOptions allocator;
     std::vector<float> input_tensor_values;
+    std::vector<int64_t>input_node_dims;
 };

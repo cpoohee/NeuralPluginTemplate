@@ -232,7 +232,7 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
         int bufSize = buffer.getNumSamples();
         for (auto i = 0; i < bufSize; ++i)
         {
-            dryQueue.push(readBuf1[i] + readBuf2[i]); // sum up
+            dryQueue.push( (readBuf1[i] + readBuf2[i]) * 0.5f ); // sum up
         }
     }
     else{
