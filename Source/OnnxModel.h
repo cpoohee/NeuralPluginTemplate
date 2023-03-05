@@ -35,11 +35,11 @@ private:
     void downsample(AudioBuffer<float> &buffer);
     void upsample(AudioBuffer<float> &buffer);
     
-    Ort::Value input_tensor{nullptr};
-    Ort::Value output_tensor{nullptr};
-    std::vector<const char*> input_node_names;
-    std::vector<const char*> output_node_names;
+//    Ort::Value input_tensor{nullptr};
+//    Ort::Value output_tensor{nullptr};
+//    std::vector<const char*> input_node_names;
+//    std::vector<const char*> output_node_names;
     Ort::AllocatorWithDefaultOptions allocator;
-    std::vector<float> input_tensor_values;
-    std::vector<int64_t>input_node_dims;
+//    std::vector<float> input_tensor_values;
+//    std::vector<int64_t>input_node_dims;
 };

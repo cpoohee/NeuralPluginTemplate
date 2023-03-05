@@ -24,6 +24,9 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
     state.state.addChild ({ "uiState", { { "width",  600 }, { "height", 450 } }, {} }, -1, nullptr);
 
     resetMeterValues();
+    
+    dryQueue_float = std::queue<float>();
+    dryQueue_double = std::queue<double>();
 }
 
 NeuralDoublerAudioProcessor::~NeuralDoublerAudioProcessor()
@@ -125,8 +128,8 @@ void NeuralDoublerAudioProcessor::releaseResources()
 void NeuralDoublerAudioProcessor::reset()
 {
     // reset temp buffers
-    dryBuffer_float.clear();
-    dryBuffer_double.clear();
+//    dryBuffer_float.clear();
+//    dryBuffer_double.clear();
     
     // reset meter values
     resetMeterValues();
@@ -232,15 +235,18 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
         int bufSize = buffer.getNumSamples();
         for (auto i = 0; i < bufSize; ++i)
         {
-            dryQueue.push( (readBuf1[i] + readBuf2[i]) * 0.5f ); // sum up
+            FloatType left = readBuf1[i];
+            FloatType right = readBuf2[i];
+            FloatType sum =(left + right) * 0.5f;
+            dryQueue.push(sum); // sum up
         }
     }
     else{
-        const FloatType * readBuf = buffer.getReadPointer(0);
+//        const FloatType * readBuf = buffer.getReadPointer(0);
         int bufSize = buffer.getNumSamples();
         for (auto i = 0; i < bufSize; ++i)
         {
-            dryQueue.push(readBuf[i]);
+            dryQueue.push(buffer.getSample(0, i));
         }
     }
 
@@ -249,6 +255,10 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
     
     // update new number of samples
     numSamples = buffer.getNumSamples();
+    
+    if(numSamples==0){
+        return;
+    }
     
     // pop number of samples from fifo dry buffer, match with sample size after model output
     int channelSize = (isStereo)? 2 : 1;

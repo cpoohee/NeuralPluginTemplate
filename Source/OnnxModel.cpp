@@ -15,26 +15,26 @@ void OnnxModel::setup(File modelPath, int modelSampleRate, int modelBlockSize)
     env = Ort::Env(Ort::Env(ORT_LOGGING_LEVEL_WARNING, "Default"));
     session = Ort::Session(env, modelPath.getFullPathName().toRawUTF8() , Ort::SessionOptions{nullptr});
     
-    auto type_info = session.GetInputTypeInfo(0);
-    auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
-    input_node_dims = tensor_info.GetShape();
-    
-    int input_tensor_size = modelBlockSize;
-    input_tensor_values = std::vector<float>(modelBlockSize);
-
-    const size_t num_input_nodes = session.GetInputCount();
-    for (size_t i = 0; i < num_input_nodes; ++i)
-    {
-        auto input_name = session.GetInputNameAllocated(i, allocator);
-        input_node_names.push_back(input_name.get());
-    }
-
-    const size_t num_output_nodes = session.GetOutputCount();
-    for (size_t i = 0; i < num_output_nodes; ++i)
-    {
-        auto output_name = session.GetOutputNameAllocated(i, allocator);
-        output_node_names.push_back(output_name.get());
-    }
+//    auto type_info = session.GetInputTypeInfo(0);
+//    auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+//    input_node_dims = tensor_info.GetShape();
+//
+//    int input_tensor_size = modelBlockSize;
+//    input_tensor_values = std::vector<float>(modelBlockSize);
+//
+//    const size_t num_input_nodes = session.GetInputCount();
+//    for (size_t i = 0; i < num_input_nodes; ++i)
+//    {
+//        auto input_name = session.GetInputNameAllocated(i, allocator);
+//        input_node_names.push_back(input_name.get());
+//    }
+//
+//    const size_t num_output_nodes = session.GetOutputCount();
+//    for (size_t i = 0; i < num_output_nodes; ++i)
+//    {
+//        auto output_name = session.GetOutputNameAllocated(i, allocator);
+//        output_node_names.push_back(output_name.get());
+//    }
 
 //    memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
 //    input_tensor = Ort::Value::CreateTensor<float>(memory_info,
@@ -147,24 +147,60 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
 
     std::vector<float> processedData;
 
-
     // when fifo buffer is large enough to do processing
     int fifoSize = (int)fifoData.size(); // in case of next time, queue is accessed from other threads..
     
     while (fifoSize >= modelBlockSize_)
     {
+        auto type_info = session.GetInputTypeInfo(0);
+        auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+
+        const size_t num_input_nodes = session.GetInputCount();
+        std::vector<Ort::AllocatedStringPtr> input_names_ptr;
+        std::vector<const char*> input_node_names;
+        input_names_ptr.reserve(num_input_nodes);
+        input_node_names.reserve(num_input_nodes);
+        std::vector<int64_t> input_node_dims;
+        
+        for (size_t i = 0; i < num_input_nodes; ++i)
+        {
+            auto input_name = session.GetInputNameAllocated(i, allocator);
+            input_node_names.push_back(input_name.get());
+            input_names_ptr.push_back(std::move(input_name));
+            // print input node types
+            auto type_info = session.GetInputTypeInfo(i);
+            auto tensor_info = type_info.GetTensorTypeAndShapeInfo();
+            ONNXTensorElementDataType type = tensor_info.GetElementType();
+            // print input shapes/dims
+            input_node_dims = tensor_info.GetShape();
+        }
+
+        const size_t num_output_nodes = session.GetOutputCount();
+        std::vector<Ort::AllocatedStringPtr> output_names_ptr;
+        std::vector<const char*> output_node_names;
+        for (size_t i = 0; i < num_output_nodes; ++i)
+        {
+            auto output_name = session.GetOutputNameAllocated(i, allocator);
+            output_node_names.push_back(output_name.get());
+            output_names_ptr.push_back(std::move(output_name));
+        }
+        
         std::vector<float> fetchedData;
+        
+        int input_tensor_size = modelBlockSize_;
+        std::vector<float>input_tensor_values(modelBlockSize_);
+        
         for (auto i = 0; i < modelBlockSize_; ++i)
         {
             input_tensor_values[i] = fifoData.front();
-            fetchedData.push_back(fifoData.front());// testing
+//            fetchedData.push_back(fifoData.front());// testing
             fifoData.pop();
-            
         }
         fifoSize = fifoSize - modelBlockSize_;
+        
         auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
         
-        input_tensor = Ort::Value::CreateTensor<float>(memory_info,
+        auto input_tensor = Ort::Value::CreateTensor<float>(memory_info,
                                                        input_tensor_values.data(),
                                                        modelBlockSize_,
                                                        input_node_dims.data(),
@@ -172,14 +208,12 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
 
         auto output_tensors =
               session.Run(Ort::RunOptions{nullptr}, input_node_names.data(), &input_tensor, 1, output_node_names.data(), 1);
-//
-//        float* floatarr = output_tensors.front().GetTensorMutableData<float>();
-//
-//        std::vector<float> fetchedData(modelBlockSize_);
-//        for (auto i = 0; i < modelBlockSize_; ++i)
-//        {
-//            fetchedData[i] = floatarr[i];
-//        }
+
+        float* floatarr = output_tensors.front().GetTensorMutableData<float>();
+        for (int i = 0; i < modelBlockSize_; ++i)
+        {
+            fetchedData.push_back(floatarr[i]);
+        }
 
         // transfer data to processed vector
         processedData.insert(processedData.end(),
@@ -187,7 +221,7 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
                              fetchedData.end());
     }
 
-    buffer.clear();
+    //buffer.clear();
     // write back to audio buffer
     if (processedData.size() > 0)
     {
@@ -200,6 +234,13 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
             // copy left to right
             buffer.copyFrom(1, 0, buffer, 0, 0, buffer.getNumSamples());
             buffer.applyGain(0.5);
+        }
+    }
+    else{
+        buffer.setSize(0, 0);
+        if (isStereo)
+        {
+            buffer.setSize(1, 0);
         }
     }
     
