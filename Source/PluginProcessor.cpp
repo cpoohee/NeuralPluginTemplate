@@ -108,7 +108,7 @@ void NeuralDoublerAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     if (isUsingDoublePrecision())
     {
         dryBuffer_double.setSize (getTotalNumInputChannels(), samplesPerBlock);
-        dryBuffer_float .setSize (1, 1);
+        dryBuffer_float.setSize (1, 1);
     }
     else
     {
@@ -128,8 +128,8 @@ void NeuralDoublerAudioProcessor::releaseResources()
 void NeuralDoublerAudioProcessor::reset()
 {
     // reset temp buffers
-//    dryBuffer_float.clear();
-//    dryBuffer_double.clear();
+    dryBuffer_float.clear();
+    dryBuffer_double.clear();
     
     // reset meter values
     resetMeterValues();
