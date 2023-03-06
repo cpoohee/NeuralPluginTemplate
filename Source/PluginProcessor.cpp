@@ -14,7 +14,7 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
 {
     auto bundle = juce::File::getSpecialLocation (juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     // to update these params for different models
-    auto model_file = bundle.getChildFile ("Resources/model/aw_wavenet.onnx");
+    auto model_file = bundle.getChildFile ("Resources/model/mrstft_wavenet.onnx");
     int modelSampleRate = 44100;
     int modelBlockSize = 1024;
     

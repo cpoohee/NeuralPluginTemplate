@@ -183,6 +183,9 @@ void OnnxModel::process(AudioBuffer<float>& buffer)
         
         auto memory_info = Ort::MemoryInfo::CreateCpu(OrtArenaAllocator, OrtMemTypeDefault);
         
+        // set the variable sized sample length
+        input_node_dims.at(2) = (int64_t)modelBlockSize_;
+        
         auto input_tensor = Ort::Value::CreateTensor<float>(memory_info,
                                                        input_tensor_values.data(),
                                                        modelBlockSize_,
