@@ -39,7 +39,8 @@ private:
     NumeralSlider mixSlider, curveSlider;
     AudioProcessorValueTreeState::SliderAttachment preGainAttachment, postGainAttachment,mixAttachment;
 
-//    AudioProcessorValueTreeState::ButtonAttachment zeroClipButtonAttachment, bandSplitButtonAttachment;
+    juce::ToggleButton flipPhaseButton;
+    AudioProcessorValueTreeState::ButtonAttachment flipPhaseButtonAttachment;
     
     OwnedArray<Gui::LevelMeter> inputMeters;
     OwnedArray<Gui::LevelMeter> outputMeters;

@@ -6,15 +6,20 @@ NeuralDoublerAudioProcessorEditor::NeuralDoublerAudioProcessorEditor (NeuralDoub
 : AudioProcessorEditor    (&owner),
 preGainAttachment       (owner.state, "preGain",  preGainSlider),
 postGainAttachment      (owner.state, "postGain", postGainSlider),
-mixAttachment           (owner.state, "mix", mixSlider)
+mixAttachment           (owner.state, "mix", mixSlider),
+flipPhaseButtonAttachment(owner.state, "flipPhase", flipPhaseButton)
 {
     // add some components..
     addAndMakeVisible (preGainSlider);
     addAndMakeVisible (postGainSlider);
     addAndMakeVisible (mixSlider);
+    addAndMakeVisible (flipPhaseButton);
     addAndMakeVisible (titleLabel);
         
     resetMeters(); // adds meters and make visible
+    
+    // set label text
+    flipPhaseButton.setButtonText("Phase Flip");
     
     // slider init
     preGainSlider.setSliderStyle (Slider::LinearVertical);
@@ -127,19 +132,19 @@ void NeuralDoublerAudioProcessorEditor::resized()
     controlsItemArray.add(FlexItem(sliderWidth, sliderHeight, mixSlider));
 
     // nested flex item
-//    FlexBox buttonFlexBox;
-//    buttonFlexBox.flexDirection = FlexBox::Direction::column;
-//    buttonFlexBox.flexWrap = FlexBox::Wrap::noWrap;
-//    buttonFlexBox.alignContent = FlexBox::AlignContent::stretch;
-//    buttonFlexBox.items.add(FlexItem(sliderWidth, sonicLookAndFeel.getFontSize() * 2, bandSplitButton));
+    FlexBox buttonFlexBox;
+    buttonFlexBox.flexDirection = FlexBox::Direction::column;
+    buttonFlexBox.flexWrap = FlexBox::Wrap::noWrap;
+    buttonFlexBox.alignContent = FlexBox::AlignContent::stretch;
+    buttonFlexBox.items.add(FlexItem(sliderWidth, sonicLookAndFeel.getFontSize() * 2, flipPhaseButton));
 //    buttonFlexBox.items.add(FlexItem(sliderWidth, sonicLookAndFeel.getFontSize() * 2, zeroClipButton));
 //
-//    controlsItemArray.add(FlexItem(sliderWidth, sliderHeight, buttonFlexBox)
-//                          .withFlex(1.0f)
-//                          .withMargin(
-//                                      FlexItem::Margin(bounds.getHeight() / 2, 0, 0, 0)
-//                                      )
-//                          );
+    controlsItemArray.add(FlexItem(sliderWidth, sliderHeight, buttonFlexBox)
+                          .withFlex(1.0f)
+                          .withMargin(
+                                      FlexItem::Margin(bounds.getHeight() / 2, 0, 0, 0)
+                                      )
+                          );
 
     // continue other items
 //    controlsItemArray.add(FlexItem(sliderWidth, sliderHeight, curveSlider));

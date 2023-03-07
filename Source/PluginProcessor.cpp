@@ -9,12 +9,13 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
                        { std::make_unique<AudioParameterFloat> (ParameterID { "preGain",  1 }, "Input",  NormalisableRange<float> (-100.0f, 12.0f, 0.1f, 4.f), 0.0f),  // start, end, interval, skew
                          std::make_unique<AudioParameterFloat> (ParameterID { "postGain", 1 }, "Output", NormalisableRange<float>(-100.0f, 12.0f, 0.1f, 4.f), 0.0f),
                          std::make_unique<AudioParameterFloat> (ParameterID { "mix", 1 }, "Wet/Dry", NormalisableRange<float> (0.0f, 100.0f, 0.1f), 100.0f),
+                         std::make_unique<AudioParameterBool>  (ParameterID( "flipPhase", 1), "Phase Flip", false),
                     
                 })
 {
     auto bundle = juce::File::getSpecialLocation (juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
     // to update these params for different models
-    auto model_file = bundle.getChildFile ("Resources/model/mrstft_wavenet.onnx");
+    auto model_file = bundle.getChildFile ("Resources/model/waveunet_aug_mrLoss.onnx");
     int modelSampleRate = 44100;
     int modelBlockSize = 1024;
     
@@ -190,11 +191,13 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
     auto preGainRawValue  = state.getParameter ("preGain")->getValue();
     auto postGainRawValue = state.getParameter ("postGain")->getValue();
     auto mixRawValue = state.getParameter("mix")->getValue();
+    auto toFlipPhase = state.getParameter("flipPhase")->getValue();
     
     // convert back to representation
     auto preGainParamValue  = state.getParameter ("preGain")->convertFrom0to1(preGainRawValue);
     auto postGainParamValue  = state.getParameter ("postGain")->convertFrom0to1(postGainRawValue);
     auto mixParamValue  = mixRawValue;
+    bool toFlipPhaseValue = state.getParameter("flipPhase")->convertFrom0to1(toFlipPhase);
     
     auto numSamples = buffer.getNumSamples();
 
@@ -256,8 +259,14 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
     // update new number of samples
     numSamples = buffer.getNumSamples();
     
-    if(numSamples==0){
+    if(numSamples==0)
+    {
         return;
+    }
+    
+    if (toFlipPhase)
+    {
+        buffer.applyGain(0, numSamples, (FloatType)-1.0f);
     }
     
     // pop number of samples from fifo dry buffer, match with sample size after model output

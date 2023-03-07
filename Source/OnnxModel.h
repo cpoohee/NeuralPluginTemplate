@@ -42,4 +42,6 @@ private:
     std::vector<const char*> output_node_names;
     Ort::AllocatorWithDefaultOptions allocator;
     std::vector<int64_t>input_node_dims;
+    
+    std::vector<float>prev_block;
 };
