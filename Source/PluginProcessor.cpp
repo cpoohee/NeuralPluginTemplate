@@ -265,7 +265,7 @@ void NeuralAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
         return;
     }
     
-    if (toFlipPhase)
+    if (toFlipPhaseValue)
     {
         buffer.applyGain(0, numSamples, (FloatType)-1.0f);
     }

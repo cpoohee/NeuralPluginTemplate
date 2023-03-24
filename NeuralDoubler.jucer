@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="ASrHHg" name="NeuralDoubler" projectType="audioplug" useAppConfig="0"
-              addUsingNamespaceToJuceHeader="1" jucerFormatVersion="1" companyName="SonicVitamin"
+<JUCERPROJECT id="ASrHHg" name="NeuralTemplate" projectType="audioplug" useAppConfig="0"
+              addUsingNamespaceToJuceHeader="1" jucerFormatVersion="1" companyName="SV"
               pluginManufacturerCode="Sovi" pluginCode="Nudo" pluginName="NeuDoub"
               maxBinaryFileSize="20971520" version="0.1.0">
-  <MAINGROUP id="irAECy" name="NeuralDoubler">
+  <MAINGROUP id="irAECy" name="NeuralTemplate">
     <GROUP id="{CE71D24B-3EE9-1A32-F0C4-60195F2D2F4F}" name="Source">
       <FILE id="FXQXIZ" name="OnnxModel.cpp" compile="1" resource="0" file="Source/OnnxModel.cpp"/>
       <FILE id="Zj4BYH" name="OnnxModel.h" compile="0" resource="0" file="Source/OnnxModel.h"/>
