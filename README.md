@@ -3,6 +3,10 @@ A audio plugin template based on JUCE to load an ONNX AI model.
 - it uses the dynamic lib of ONNX runtime compliled for MACOS. 
 - the current Projucer is aimed to deploy for MAC OS only. 
 
+The current controls include the input/output gain and mix level, and also a phase flip check box. 
+
+There are 2 basic level meter that comes with it.
+
 # Quick instructions
 - place the ONNX Model under the folder `./model`
 - at the constructor of `PluginProcessor.cpp`
