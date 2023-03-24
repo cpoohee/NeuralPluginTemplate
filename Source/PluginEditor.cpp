@@ -2,7 +2,7 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-NeuralDoublerAudioProcessorEditor::NeuralDoublerAudioProcessorEditor (NeuralDoublerAudioProcessor& owner)
+NeuralAudioProcessorEditor::NeuralAudioProcessorEditor (NeuralAudioProcessor& owner)
 : AudioProcessorEditor    (&owner),
 preGainAttachment       (owner.state, "preGain",  preGainSlider),
 postGainAttachment      (owner.state, "postGain", postGainSlider),
@@ -73,7 +73,7 @@ flipPhaseButtonAttachment(owner.state, "flipPhase", flipPhaseButton)
     startTimerHz (24);
 }
 
-NeuralDoublerAudioProcessorEditor::~NeuralDoublerAudioProcessorEditor()
+NeuralAudioProcessorEditor::~NeuralAudioProcessorEditor()
 {
     for (auto levelMeter : inputMeters )
         removeChildComponent(levelMeter);
@@ -88,7 +88,7 @@ NeuralDoublerAudioProcessorEditor::~NeuralDoublerAudioProcessorEditor()
 }
 
 //==============================================================================
-void NeuralDoublerAudioProcessorEditor::paint (juce::Graphics& g)
+void NeuralAudioProcessorEditor::paint (juce::Graphics& g)
 {
     if(Process::isForegroundProcess())
     {
@@ -98,7 +98,7 @@ void NeuralDoublerAudioProcessorEditor::paint (juce::Graphics& g)
 
 }
 
-void NeuralDoublerAudioProcessorEditor::resized()
+void NeuralAudioProcessorEditor::resized()
 {
     lastUIWidth  = getWidth();
     lastUIHeight = getHeight();
@@ -159,7 +159,7 @@ void NeuralDoublerAudioProcessorEditor::resized()
     controlsFlexbox.performLayout(bounds);
 }
 
-void NeuralDoublerAudioProcessorEditor::timerCallback()
+void NeuralAudioProcessorEditor::timerCallback()
 {
     // update level meter
     std::vector<float> inputRmsValues = getProcessor().getInputRMSValue();
@@ -185,7 +185,7 @@ void NeuralDoublerAudioProcessorEditor::timerCallback()
     }
 }
 
-void NeuralDoublerAudioProcessorEditor::resetMeters()
+void NeuralAudioProcessorEditor::resetMeters()
 {
 //    auto inputChannels =  getProcessor().getTotalNumInputChannels();
 //    auto outputChannels =  getProcessor().getTotalNumOutputChannels();
@@ -215,7 +215,7 @@ void NeuralDoublerAudioProcessorEditor::resetMeters()
     }
 }
 
-NeuralDoublerAudioProcessor& NeuralDoublerAudioProcessorEditor::getProcessor() const
+NeuralAudioProcessor& NeuralAudioProcessorEditor::getProcessor() const
 {
-    return static_cast<NeuralDoublerAudioProcessor&> (processor);
+    return static_cast<NeuralAudioProcessor&> (processor);
 }

@@ -59,14 +59,15 @@ void OnnxModel::reset()
 {
     fifoData = std::queue<float>(); //clear fifo
     
-    lagrangeInterpolatorUp1.reset();
-    lagrangeInterpolatorUp2.reset();
-    lagrangeInterpolatorDown1.reset();
-    lagrangeInterpolatorDown2.reset();
+//    lagrangeInterpolatorUp1.reset();
+//    lagrangeInterpolatorUp2.reset();
+//    lagrangeInterpolatorDown1.reset();
+//    lagrangeInterpolatorDown2.reset();
 }
 
 void OnnxModel::downsample(AudioBuffer<float> &buffer)
 {
+    // down sample is not working well now.
     if (buffer.getNumSamples() == 0){
         return;
     }
@@ -103,6 +104,7 @@ void OnnxModel::downsample(AudioBuffer<float> &buffer)
 
 void OnnxModel::upsample(AudioBuffer<float> &buffer)
 {
+    // upsample is not working well now.
     if (buffer.getNumSamples() == 0){
         return;
     }

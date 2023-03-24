@@ -10,13 +10,13 @@
 //==============================================================================
 /**
 */
-class NeuralDoublerAudioProcessorEditor  : public AudioProcessorEditor,
+class NeuralAudioProcessorEditor  : public AudioProcessorEditor,
                                            private Timer,
                                            private Value::Listener
 {
 public:
-    NeuralDoublerAudioProcessorEditor (NeuralDoublerAudioProcessor&);
-    ~NeuralDoublerAudioProcessorEditor() override;
+    NeuralAudioProcessorEditor (NeuralAudioProcessor&);
+    ~NeuralAudioProcessorEditor() override;
 
     //==============================================================================
     void paint (juce::Graphics&) override;
@@ -28,12 +28,12 @@ public:
 private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
-//    NeuralDoublerAudioProcessor& audioProcessor;
+//    NeuralAudioProcessorEditor& audioProcessor;
     
     Label preGainLabel  { {}, "Input" },
           postGainLabel { {}, "Output" },
           mixLabel  { {}, "Wet/Dry" },
-          titleLabel { {}, "Neural Doubler" }  ;
+          titleLabel { {}, "Neural Template" }  ;
 
     DecibelSlider preGainSlider, postGainSlider;
     NumeralSlider mixSlider, curveSlider;
@@ -59,7 +59,7 @@ private:
         setSize (lastUIWidth.getValue(), lastUIHeight.getValue());
     }
     
-    NeuralDoublerAudioProcessor& getProcessor() const;
+    NeuralAudioProcessor& getProcessor() const;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeuralDoublerAudioProcessorEditor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeuralAudioProcessorEditor)
 };

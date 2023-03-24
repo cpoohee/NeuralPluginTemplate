@@ -3,7 +3,7 @@
 
 
 //==============================================================================
-NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
+NeuralAudioProcessor::NeuralAudioProcessor()
 : AudioProcessor (getBusesProperties()),
                 state (*this, nullptr, "state",
                        { std::make_unique<AudioParameterFloat> (ParameterID { "preGain",  1 }, "Input",  NormalisableRange<float> (-100.0f, 12.0f, 0.1f, 4.f), 0.0f),  // start, end, interval, skew
@@ -14,10 +14,11 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
                 })
 {
     auto bundle = juce::File::getSpecialLocation (juce::File::currentExecutableFile).getParentDirectory().getParentDirectory();
-    // to update these params for different models
-    auto model_file = bundle.getChildFile ("Resources/model/waveunet_aug_mrLoss.onnx");
+    
+    /** UPDATE THESE PARAMS FOR DIFFERENT MODELS!! **/
+    auto model_file = bundle.getChildFile ("Resources/model/waveunet_distort.onnx");
     int modelSampleRate = 44100;
-    int modelBlockSize = 1024;
+    int modelBlockSize = 512;
     
     onnxModel.setup(model_file, modelSampleRate, modelBlockSize);
     
@@ -30,17 +31,17 @@ NeuralDoublerAudioProcessor::NeuralDoublerAudioProcessor()
     dryQueue_double = std::queue<double>();
 }
 
-NeuralDoublerAudioProcessor::~NeuralDoublerAudioProcessor()
+NeuralAudioProcessor::~NeuralAudioProcessor()
 {
 }
 
 //==============================================================================
-const juce::String NeuralDoublerAudioProcessor::getName() const
+const juce::String NeuralAudioProcessor::getName() const
 {
-    return "Neural Doubler";
+    return "Neural Template";
 }
 
-bool NeuralDoublerAudioProcessor::acceptsMidi() const
+bool NeuralAudioProcessor::acceptsMidi() const
 {
    #if JucePlugin_WantsMidiInput
     return true;
@@ -49,7 +50,7 @@ bool NeuralDoublerAudioProcessor::acceptsMidi() const
    #endif
 }
 
-bool NeuralDoublerAudioProcessor::producesMidi() const
+bool NeuralAudioProcessor::producesMidi() const
 {
    #if JucePlugin_ProducesMidiOutput
     return true;
@@ -58,7 +59,7 @@ bool NeuralDoublerAudioProcessor::producesMidi() const
    #endif
 }
 
-bool NeuralDoublerAudioProcessor::isMidiEffect() const
+bool NeuralAudioProcessor::isMidiEffect() const
 {
    #if JucePlugin_IsMidiEffect
     return true;
@@ -67,37 +68,37 @@ bool NeuralDoublerAudioProcessor::isMidiEffect() const
    #endif
 }
 
-double NeuralDoublerAudioProcessor::getTailLengthSeconds() const
+double NeuralAudioProcessor::getTailLengthSeconds() const
 {
     return 0.0;
 }
 
-int NeuralDoublerAudioProcessor::getNumPrograms()
+int NeuralAudioProcessor::getNumPrograms()
 {
     return 1;   // NB: some hosts don't cope very well if you tell them there are 0 programs,
                 // so this should be at least 1, even if you're not really implementing programs.
 }
 
-int NeuralDoublerAudioProcessor::getCurrentProgram()
+int NeuralAudioProcessor::getCurrentProgram()
 {
     return 0;
 }
 
-void NeuralDoublerAudioProcessor::setCurrentProgram (int index)
+void NeuralAudioProcessor::setCurrentProgram (int index)
 {
 }
 
-const juce::String NeuralDoublerAudioProcessor::getProgramName (int index)
+const juce::String NeuralAudioProcessor::getProgramName (int index)
 {
     return {};
 }
 
-void NeuralDoublerAudioProcessor::changeProgramName (int index, const juce::String& newName)
+void NeuralAudioProcessor::changeProgramName (int index, const juce::String& newName)
 {
 }
 
 //==============================================================================
-void NeuralDoublerAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
+void NeuralAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     // reinitilise meter
     for (auto i = 0; i < inputRMS.size(); ++i)
@@ -120,13 +121,13 @@ void NeuralDoublerAudioProcessor::prepareToPlay (double sampleRate, int samplesP
     onnxModel.prepareToPlay(sampleRate, samplesPerBlock);
 }
 
-void NeuralDoublerAudioProcessor::releaseResources()
+void NeuralAudioProcessor::releaseResources()
 {
     // When playback stops, you can use this as an opportunity to free up any
     // spare memory, etc.
 }
 
-void NeuralDoublerAudioProcessor::reset()
+void NeuralAudioProcessor::reset()
 {
     // reset temp buffers
     dryBuffer_float.clear();
@@ -140,7 +141,7 @@ void NeuralDoublerAudioProcessor::reset()
 }
 
 #ifndef JucePlugin_PreferredChannelConfigurations
-bool NeuralDoublerAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
+bool NeuralAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
   #if JucePlugin_IsMidiEffect
     juce::ignoreUnused (layouts);
@@ -165,20 +166,20 @@ bool NeuralDoublerAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 }
 #endif
 
-void NeuralDoublerAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
+void NeuralAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
     jassert (! isUsingDoublePrecision());
     process (buffer, dryBuffer_float, dryQueue_float);
 }
 
-void NeuralDoublerAudioProcessor::processBlock (AudioBuffer<double>& buffer, MidiBuffer& midiMessages)
+void NeuralAudioProcessor::processBlock (AudioBuffer<double>& buffer, MidiBuffer& midiMessages)
 {
     jassert (isUsingDoublePrecision());
     process (buffer, dryBuffer_double, dryQueue_double);
 }
 
 template <typename FloatType>
-void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
+void NeuralAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
                                           AudioBuffer<FloatType>& dry_buffer,
                                           std::queue<FloatType>& dryQueue)
 {
@@ -314,25 +315,25 @@ void NeuralDoublerAudioProcessor::process(juce::AudioBuffer<FloatType>& buffer,
 }
 
 //==============================================================================
-bool NeuralDoublerAudioProcessor::hasEditor() const
+bool NeuralAudioProcessor::hasEditor() const
 {
     return true; // (change this to false if you choose to not supply an editor)
 }
 
-juce::AudioProcessorEditor* NeuralDoublerAudioProcessor::createEditor()
+juce::AudioProcessorEditor* NeuralAudioProcessor::createEditor()
 {
-    return new NeuralDoublerAudioProcessorEditor (*this);
+    return new NeuralAudioProcessorEditor (*this);
 }
 
 //==============================================================================
-void NeuralDoublerAudioProcessor::getStateInformation (MemoryBlock& destData)
+void NeuralAudioProcessor::getStateInformation (MemoryBlock& destData)
 {
     // Store an xml representation of our state.
     if (auto xmlState = state.copyState().createXml())
         copyXmlToBinary (*xmlState, destData);
 }
 
-void NeuralDoublerAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
+void NeuralAudioProcessor::setStateInformation (const void* data, int sizeInBytes)
 {
     // Restore our plug-in's state from the xml representation stored in the above
     // method.
@@ -344,10 +345,10 @@ void NeuralDoublerAudioProcessor::setStateInformation (const void* data, int siz
 // This creates new instances of the plugin..
 juce::AudioProcessor* JUCE_CALLTYPE createPluginFilter()
 {
-    return new NeuralDoublerAudioProcessor();
+    return new NeuralAudioProcessor();
 }
 
-void NeuralDoublerAudioProcessor::resetMeterValues()
+void NeuralAudioProcessor::resetMeterValues()
 {
     inputRMS.clear();
     outputRMS.clear();
@@ -368,13 +369,13 @@ void NeuralDoublerAudioProcessor::resetMeterValues()
 }
 
 template <typename FloatType>
-void NeuralDoublerAudioProcessor::applyModel(AudioBuffer<FloatType>& buffer)
+void NeuralAudioProcessor::applyModel(AudioBuffer<FloatType>& buffer)
 {
     onnxModel.process(buffer);
 }
 
 template <typename FloatType>
-void NeuralDoublerAudioProcessor::applyMixing(AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dryBuffer, float mix)
+void NeuralAudioProcessor::applyMixing(AudioBuffer<FloatType>& buffer, AudioBuffer<FloatType>& dryBuffer, float mix)
 {
     // use linear
     auto dryValue = (1.0f) - mix;
@@ -388,13 +389,13 @@ void NeuralDoublerAudioProcessor::applyMixing(AudioBuffer<FloatType>& buffer, Au
 }
 
 template <typename FloatType>
-void NeuralDoublerAudioProcessor::applyGain (AudioBuffer<FloatType>& buffer, float gainLevel)
+void NeuralAudioProcessor::applyGain (AudioBuffer<FloatType>& buffer, float gainLevel)
 {
     for (auto channel = 0; channel < getTotalNumOutputChannels(); ++channel)
         buffer.applyGain (channel, 0, buffer.getNumSamples(), gainLevel);
 }
 
-std::vector<float> NeuralDoublerAudioProcessor::getInputRMSValue()
+std::vector<float> NeuralAudioProcessor::getInputRMSValue()
 {
     std::vector<float> rmsValues;
     for (auto i : inputRMS)
@@ -404,7 +405,7 @@ std::vector<float> NeuralDoublerAudioProcessor::getInputRMSValue()
     return rmsValues;
 }
 
-std::vector<float> NeuralDoublerAudioProcessor::getOutputRMSValue()
+std::vector<float> NeuralAudioProcessor::getOutputRMSValue()
 {
     std::vector<float> rmsValues;
     for (auto i : outputRMS)

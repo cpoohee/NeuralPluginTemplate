@@ -5,15 +5,15 @@
 //==============================================================================
 /**
 */
-class NeuralDoublerAudioProcessor  : public juce::AudioProcessor
+class NeuralAudioProcessor  : public juce::AudioProcessor
                             #if JucePlugin_Enable_ARA
                              , public juce::AudioProcessorARAExtension
                             #endif
 {
 public:
     //==============================================================================
-    NeuralDoublerAudioProcessor();
-    ~NeuralDoublerAudioProcessor() override;
+    NeuralAudioProcessor();
+    ~NeuralAudioProcessor() override;
 
     //==============================================================================
     void prepareToPlay (double sampleRate, int samplesPerBlock) override;
@@ -88,5 +88,5 @@ private:
     std::queue<double> dryQueue_double;
 
     
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeuralDoublerAudioProcessor)
+    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (NeuralAudioProcessor)
 };
