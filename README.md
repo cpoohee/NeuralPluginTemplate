@@ -5,12 +5,12 @@ An audio plugin template based on JUCE to load an ONNX AI model.
 
 The current controls include the input/output gain and mix level, and also a phase flip check box. 
 
-There are 2 basic level meter that comes with it.
+There are 2 basic level meter for input and output.
 
 # Quick instructions
 - place the ONNX Model under the folder `./model`
 - at the constructor of `PluginProcessor.cpp`
-  - edit the file path : `auto model_file = bundle.getChildFile ("Resources/model/waveunet_distort.onnx");`
+  - edit the file path e.g : `auto model_file = bundle.getChildFile ("Resources/model/waveunet_distort.onnx");`
   - and also it's intended blocksize
   
 - Modify `OnnxModel.cpp` 's process() for modeling input/outputs.
