@@ -1,5 +1,5 @@
 # NeuralPluginTemplate
-A audio plugin template based on JUCE to load an ONNX AI model.
+An audio plugin template based on JUCE to load an ONNX AI model.
 - it uses the dynamic lib of ONNX runtime compliled for MACOS. 
 - the current Projucer is aimed to deploy for MAC OS only. 
 
