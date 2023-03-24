@@ -11,6 +11,7 @@ A audio plugin template based on JUCE to load an ONNX AI model.
   
 - Modify OnnxModel.cpp 's process() for modeling input/outputs.
 
+- the current onnxmodel is a noise producing model sample.
 
 # Notes
 - the process is currently mixed down to mono as the input to the ML model. DO modify as if your model needs stereo input.
