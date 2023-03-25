@@ -13,7 +13,7 @@ There are 2 basic level meter for input and output.
   - edit the file path e.g : `auto model_file = bundle.getChildFile ("Resources/model/waveunet_distort.onnx");`
   - and also it's intended blocksize
   
-- Modify `OnnxModel.cpp` 's process() for modeling input/outputs.
+- Modify `OnnxModel.cpp` 's process() for model's input/outputs processing.
 
 - the current onnxmodel is a noise producing model sample.
 
