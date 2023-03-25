@@ -20,7 +20,7 @@ There are 2 basic level meter for input and output.
 - this repo contains a version 1.14.1 ONNX runtime library for MACOS, which the projucer is configured to run RPath with it.
 
 # Notes
-- the process is currently mixed down to mono as the input to the ML model. 
+- the process is currently mixed down to mono for the ML model's input. 
 - Do modify both `OnnxModel.cpp` and `PluginProcessor.cpp` if your model needs stereo input.
 
 # Related
